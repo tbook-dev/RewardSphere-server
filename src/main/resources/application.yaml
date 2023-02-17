@@ -3,11 +3,12 @@ spring:
     deserialization:
       read-date-timestamps-as-nanoseconds: false
   redis:
-    host: 17.0.0.1
-    port: 6379
+    url: ${redis_url}
+    #host: 17.0.0.1
+    #port: 6379
 
 r2:
-  endpoint: https://04046c63b7c3860b6434138078ee49e7.r2.cloudflarestorage.com/opic
+  endpoint: https://04046c63b7c3860b6434138078ee49e7.r2.cloudflarestorage.com/btm
   publicUrl: https://pub-6fe8916c26334830906d2b9ca9d94efa.r2.dev/
   accountId: 04046c63b7c3860b6434138078ee49e7
   accessKey: ${r2_access_key}

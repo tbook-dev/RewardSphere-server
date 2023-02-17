@@ -61,7 +61,7 @@ class SecurityConfig {
                 "https://www.tbook.com",
                 "https://app.tbook.com",
                 "https://api.tbook.com",
-                "https://grant.tbook.com"
+                "https://rs-service.fly.dev"
         )
         config.allowedHeaders = arrayListOf("*", "X-Requested-With", "Content-Type", "Authorization")
         config.allowedMethods = arrayListOf("GET", "POST", "HEAD", "PUT", "DELETE", "PATCH", "OPTIONS")

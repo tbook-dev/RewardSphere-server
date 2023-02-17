@@ -11,7 +11,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 
-fun main() {
+fun main1() {
     val userId = "1260553941714186241"
     val bearerToken =
         "AAAAAAAAAAAAAAAAAAAAAF3%2BcAEAAAAAww5nRctaDnOpRT9iuP9sJIzNQ%2FM%3DlhJQwGNjxp3B6TUbiepZ0lZ6oEuxDUmEn2Yd5VpDNOd4LMHLn8"

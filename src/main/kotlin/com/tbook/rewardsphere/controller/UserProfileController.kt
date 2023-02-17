@@ -25,7 +25,7 @@ class UserProfileController(
     }
 
 
-    @GetMapping()
+    @GetMapping("redisTest")
     fun redisTest(): Any? {
         // 设置redis : 地址-twitterId
         redisTemplate.opsForValue().set("0x0206EB62A15656F983B0601B5111875D40B9C3b7", "1478980168194555908")
