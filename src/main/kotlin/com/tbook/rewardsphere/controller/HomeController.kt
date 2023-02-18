@@ -6,6 +6,7 @@ import com.tbook.rewardsphere.service.ContractService
 import com.tbook.rewardsphere.service.NextIdService
 import com.tbook.rewardsphere.service.S3Service
 import com.tbook.rewardsphere.service.TwitterInfoService
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.http.RequestEntity
@@ -27,6 +28,8 @@ class HomeController(
         private val s3Service: S3Service,
         private val nextIdService: NextIdService
         ) {
+    private val logger = KotlinLogging.logger{}
+
     private val twitterToken =
             "AAAAAAAAAAAAAAAAAAAAAF3%2BcAEAAAAAww5nRctaDnOpRT9iuP9sJIzNQ%2FM%3DlhJQwGNjxp3B6TUbiepZ0lZ6oEuxDUmEn2Yd5VpDNOd4LMHLn8"
 
@@ -45,18 +48,23 @@ class HomeController(
 
     @PostMapping("/addMapping")
     fun deployContract(@RequestParam("twitId") twitId: String): Any {
-        val pic = "https://ik.imagekit.io/tweetpik/356884789962211917/${twitId}.png"
-        val content = twitterService.getTweet(twitId, twitterToken)
-        val idAttr = Attribute("twit_id", twitId)
-        val meta = NFTMetaData("RewardSphere", "RewardSphere",
-                content, pic, listOf(idAttr))
-        val nftId = contractService.addMapping(twitId)
-        redisTemplate.opsForValue().set(twitId,nftId)
-        s3Service.putMeta(nftId.toString(), meta)
-        return mapOf("opensea" to "https://testnets.opensea.io/assets/mumbai/0xACdE17C1A595Ae2Cf12605a157Ae8Ad5Ddf8953F/${nftId}",
-                "contract" to "https://mumbai.polygonscan.com/address/0xACdE17C1A595Ae2Cf12605a157Ae8Ad5Ddf8953F",
-                "nftId" to nftId
-        )
+        try {
+            val pic = "https://ik.imagekit.io/tweetpik/356884789962211917/${twitId}.png"
+            //val content = twitterService.getTweet(twitId, twitterToken)
+            val idAttr = Attribute("twit_id", twitId)
+            val meta = NFTMetaData("RewardSphere", "RewardSphere",
+                    "RewardSphere NFT", pic, listOf(idAttr))
+            val nftId = contractService.addMapping(twitId)
+            redisTemplate.opsForValue().set(twitId, nftId)
+            s3Service.putMeta(nftId.toString(), meta)
+            return mapOf("opensea" to "https://testnets.opensea.io/assets/mumbai/0xACdE17C1A595Ae2Cf12605a157Ae8Ad5Ddf8953F/${nftId}",
+                    "contract" to "https://mumbai.polygonscan.com/address/0xACdE17C1A595Ae2Cf12605a157Ae8Ad5Ddf8953F",
+                    "nftId" to nftId
+            )
+        } catch (ex: Exception) {
+            logger.error("add mapping error", ex)
+            throw ex
+        }
     }
 
     @GetMapping("/contractAddress")
