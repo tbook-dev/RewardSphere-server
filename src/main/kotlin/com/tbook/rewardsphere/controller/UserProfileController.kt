@@ -7,15 +7,16 @@ import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.data.redis.core.RedisTemplate
-import com.fasterxml.jackson.databind.ObjectMapper
 import com.tbook.rewardsphere.service.NextIdService
+import com.tbook.rewardsphere.service.RSS3Service
 
 
 @RestController
 class UserProfileController(
     val twitterInfoService: TwitterInfoService,
     private val redisTemplate: RedisTemplate<String, Any>,
-    val nextIdService: NextIdService
+    val nextIdService: NextIdService,
+    val rsS3Service: RSS3Service
 ) {
 
     val bearerToken =

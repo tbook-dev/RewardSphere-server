@@ -20,8 +20,6 @@ import java.util.*
 
 @Service
 class TwitterInfoService() {
-    private val twitterToken =
-        "AAAAAAAAAAAAAAAAAAAAAF3%2BcAEAAAAAww5nRctaDnOpRT9iuP9sJIzNQ%2FM%3DlhJQwGNjxp3B6TUbiepZ0lZ6oEuxDUmEn2Yd5VpDNOd4LMHLn8"
     val BASE_URL = "https://api.twitter.com/2"
 
 
