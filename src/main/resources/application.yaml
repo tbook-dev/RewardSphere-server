@@ -16,3 +16,7 @@ r2:
 
 logging:
   config: classpath:log4j2.xml
+
+goplus:
+  appKey: test
+  secret: test
