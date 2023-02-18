@@ -23,22 +23,24 @@ class TwitterInfoService() {
     val BASE_URL = "https://api.twitter.com/2"
 
 
-    //获取指定 ID 的推文
-    fun getTweet(tweetId: String, bearerToken: String): String {
-        val url = URL("$BASE_URL/tweets/$tweetId")
+    /**
+     * 获取指定 ID 的推文的user_id
+     */
+    fun getTweetUser(tweetId: String, bearerToken: String): String {
+        val url = URL("$BASE_URL/tweets/$tweetId?tweet.fields=created_at&expansions=author_id")
         val connection = url.openConnection() as HttpURLConnection
         connection.requestMethod = "GET"
         connection.setRequestProperty("Authorization", "Bearer $bearerToken")
 
-        val response = StringBuffer()
-        BufferedReader(InputStreamReader(connection.inputStream)).use {
-            var inputLine: String?
-            while (it.readLine().also { inputLine = it } != null) {
-                response.append(inputLine)
-            }
+        val response = BufferedReader(InputStreamReader(connection.inputStream)).use {
+            it.readText()
         }
-
-        return response.toString()
+        val json = JSONObject(response)
+        val data = json.getJSONObject("data")
+        val author_id = data.getString("author_id")
+        val createDate = data.getString("created_at")
+        val idWithDate = author_id + "_" + createDate
+        return idWithDate
     }
 
     //获取转推信息
@@ -108,6 +110,12 @@ class TwitterInfoService() {
         val top10Map = mutableMapOf<String, Int>()
         sortedEntries.forEach { top10Map[it.key] = it.value }
         val resultMap = mutableMapOf<String, TwitterUser>()
+        val authorIdWithDate = getTweetUser(tweetId, bearerToken)
+        val authorId = authorIdWithDate.split("_")[0]
+        val creatorUser = getTwitterUserService(address, authorId, bearerToken)
+        creatorUser.fragmentsShare = if (100 - fragmentsNum > 0) 100 - fragmentsNum else 0
+        creatorUser.commentDate = getDateTime(authorIdWithDate.split("_")[1])
+        resultMap.put(authorId, creatorUser)
         top10Map.forEach { map ->
             resultMap.put(
                 map.key.split("_")[0],
