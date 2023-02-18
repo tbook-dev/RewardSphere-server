@@ -2,15 +2,27 @@ package com.tbook.rewardsphere.service
 
 import com.amazonaws.HttpMethod
 import com.amazonaws.services.s3.AmazonS3
+import com.amazonaws.services.s3.model.ObjectMetadata
+import com.amazonaws.services.s3.model.PutObjectRequest
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.tbook.rewardsphere.model.NFTMetaData
 import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.ContentDisposition
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.util.LinkedMultiValueMap
+import org.springframework.util.MultiValueMap
 import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
+import java.io.ByteArrayInputStream
+import java.io.InputStream
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.*
+
 
 @Service
 class S3Service(
@@ -24,10 +36,16 @@ class S3Service(
         return getSignUrl(name)
     }
 
-    fun putMeta(twitId: String, meta: NFTMetaData): String {
-        val name = "btm/${twitId}.json"
-        val url = getSignUrl(name)
-        restTemplate.put(url, mapper.valueToTree<JsonNode>(meta).toString().toByteArray())
+    fun putMeta(nftId: String, meta: NFTMetaData): String {
+        val name = "${nftId}.json"
+
+        val objectMeta = ObjectMetadata()
+        objectMeta.contentType = MediaType.APPLICATION_JSON_VALUE
+        val request = PutObjectRequest("btm", name,
+                ByteArrayInputStream(mapper.valueToTree<JsonNode>(meta).toString().toByteArray()),
+                objectMeta)
+        val response = s3.putObject(request)
+        println(response)
         return "${publicUrl}/${name}"
     }
 

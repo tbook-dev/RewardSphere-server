@@ -1,5 +1,6 @@
 package com.tbook.rewardsphere.controller
 
+import com.tbook.rewardsphere.model.Attribute
 import com.tbook.rewardsphere.model.NFTMetaData
 import com.tbook.rewardsphere.service.ContractService
 import com.tbook.rewardsphere.service.NextIdService
@@ -34,18 +35,27 @@ class HomeController(
         val id = URI.create(tweetUrl).path.split("/").last()
         val request = RequestEntity.post("https://tweetpik.com/api/images")
                 .header("Content-Type", "application/json")
-                .header("Authorization", twipicKey).body("{\"tweetId\":\"${id}\"}")
-        restTemplate.exchange<String>(request)
-        return mapOf("image" to "https://ik.imagekit.io/tweetpik/356884789962211917/${id}",
+                .header("Authorization", twipicKey)
+                .body(mapOf("tweetId" to id))
+        val response = restTemplate.exchange<String>(request)
+        println(response.body)
+        return mapOf("image" to "https://ik.imagekit.io/tweetpik/356884789962211917/${id}.png",
                 "twitId" to id)
     }
 
-    @GetMapping("/deployContract")
-    fun deployContract(@RequestParam("twitId") twitId: String) {
-        val pic = "https://ik.imagekit.io/tweetpik/356884789962211917/${twitId}"
+    @PostMapping("/addMapping")
+    fun deployContract(@RequestParam("twitId") twitId: String): Any {
+        val pic = "https://ik.imagekit.io/tweetpik/356884789962211917/${twitId}.png"
         val content = twitterService.getTweet(twitId, twitterToken)
-        val meta = NFTMetaData("RewardSphere", "RewardSphere", content, pic)
-        s3Service.putMeta(twitId, meta)
+        val idAttr = Attribute("twit_id", twitId)
+        val meta = NFTMetaData("RewardSphere", "RewardSphere",
+                content, pic, listOf(idAttr))
+        val nftId = contractService.addMapping(twitId)
+        s3Service.putMeta(nftId.toString(), meta)
+        return mapOf("opensea" to "https://testnets.opensea.io/assets/mumbai/0xACdE17C1A595Ae2Cf12605a157Ae8Ad5Ddf8953F/${nftId}",
+                "contract" to "https://mumbai.polygonscan.com/address/0xACdE17C1A595Ae2Cf12605a157Ae8Ad5Ddf8953F",
+                "nftId" to nftId
+        )
     }
 
     @GetMapping("/contractAddress")

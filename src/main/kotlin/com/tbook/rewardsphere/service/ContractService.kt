@@ -1,14 +1,48 @@
 package com.tbook.rewardsphere.service
 
+import com.fasterxml.jackson.databind.JsonNode
+import org.springframework.beans.factory.annotation.Value
+import org.springframework.http.HttpHeaders
+import org.springframework.http.MediaType
+import org.springframework.http.RequestEntity
 import org.springframework.stereotype.Service
+import org.springframework.web.client.RestTemplate
+import org.springframework.web.client.exchange
 import org.web3j.protocol.Web3j
 import org.web3j.protocol.http.HttpService
 import org.web3j.protocol.core.methods.response.EthGetTransactionReceipt
+import java.net.URI
 
 @Service
-class ContractService {
+class ContractService(
+        private val restTemplate: RestTemplate,
+        @Value("\${contract_caller_url}") private val callerUrl: String,
+        @Value("\${contract_caller_secret}") private val callerSecret: String
+) {
     val ethUrl = "http://localhost:8545"
 
+    fun addMapping(twitId: String): Long {
+        println("caller url: $callerUrl")
+        val request = RequestEntity.post(URI.create("${callerUrl}/addMapping"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, callerSecret)
+                .body("""{"twitId": "$twitId"}""")
+        val result = restTemplate.exchange<JsonNode>(request).body!!
+        return result["nextId"].asLong()
+    }
+
+    fun airDropTo(address: String, nftId: Int, count: Int) {
+        val request = RequestEntity.post(URI.create("${callerUrl}/airDrop"))
+                .contentType(MediaType.APPLICATION_JSON)
+                .header(HttpHeaders.AUTHORIZATION, callerSecret)
+                .body(mapOf(
+                        "address" to address,
+                        "count" to count,
+                        "nftId" to nftId
+                ))
+        val result = restTemplate.exchange<JsonNode>(request).body!!
+        println(result)
+    }
 
     fun getContractBlockNumber(ethUrl: String, transactionHash: String): String {
         // 连接到以太坊网络
@@ -22,7 +56,7 @@ class ContractService {
 
         // 如果返回结果不为 null，表示合约已经被部署
         val blockNumber =
-            if (receipt.transactionReceipt.isPresent) receipt.transactionReceipt.get().blockNumber.toString() else "null"
+                if (receipt.transactionReceipt.isPresent) receipt.transactionReceipt.get().blockNumber.toString() else "null"
 
         // 打印部署块号
         println("合约部署块号: $blockNumber")
