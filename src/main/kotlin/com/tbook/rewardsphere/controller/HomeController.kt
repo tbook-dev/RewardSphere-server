@@ -51,6 +51,7 @@ class HomeController(
         val meta = NFTMetaData("RewardSphere", "RewardSphere",
                 content, pic, listOf(idAttr))
         val nftId = contractService.addMapping(twitId)
+        redisTemplate.opsForValue().set(twitId,nftId)
         s3Service.putMeta(nftId.toString(), meta)
         return mapOf("opensea" to "https://testnets.opensea.io/assets/mumbai/0xACdE17C1A595Ae2Cf12605a157Ae8Ad5Ddf8953F/${nftId}",
                 "contract" to "https://mumbai.polygonscan.com/address/0xACdE17C1A595Ae2Cf12605a157Ae8Ad5Ddf8953F",

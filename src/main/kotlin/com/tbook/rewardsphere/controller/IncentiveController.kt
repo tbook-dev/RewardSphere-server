@@ -1,6 +1,7 @@
 package com.tbook.rewardsphere.controller
 
 import com.tbook.rewardsphere.enums.IncentiveRules
+import com.tbook.rewardsphere.model.TwitterUser
 import com.tbook.rewardsphere.service.TwitterInfoService
 import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.web.bind.annotation.GetMapping
@@ -26,9 +27,11 @@ class IncentiveController(
 
 
     @GetMapping("/getIncentiveIds")
-    fun getIncentiveRules(@RequestParam("twitterId") twitterId: String): List<String> {
-        return twitterInfoService.getCommentsUserList(twitterId, bearerToken)
+    fun getIncentiveRules(
+        @RequestParam("twitterId") twitterId: String,
+        @RequestParam("fragmentsNum") fragmentsNum: Int
+    ): Map<String, TwitterUser> {
+        return twitterInfoService.getCommentsUserList(twitterId, bearerToken, fragmentsNum, 10)
     }
-
 
 }

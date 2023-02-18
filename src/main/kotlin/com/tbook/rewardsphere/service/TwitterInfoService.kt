@@ -3,7 +3,6 @@ package com.tbook.rewardsphere.service
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import org.springframework.stereotype.Service
-import org.springframework.web.client.RestTemplate
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.net.HttpURLConnection
@@ -11,10 +10,16 @@ import java.net.URL
 import com.google.gson.GsonBuilder
 import com.tbook.rewardsphere.model.TwitterUser
 import org.json.JSONObject
+import org.springframework.data.redis.core.RedisTemplate
+import java.time.LocalDateTime
+import java.time.ZoneId
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.*
 
 
 @Service
-class TwitterInfoService(private val restTemplate: RestTemplate) {
+class TwitterInfoService() {
     private val twitterToken =
         "AAAAAAAAAAAAAAAAAAAAAF3%2BcAEAAAAAww5nRctaDnOpRT9iuP9sJIzNQ%2FM%3DlhJQwGNjxp3B6TUbiepZ0lZ6oEuxDUmEn2Yd5VpDNOd4LMHLn8"
     val BASE_URL = "https://api.twitter.com/2"
@@ -66,8 +71,13 @@ class TwitterInfoService(private val restTemplate: RestTemplate) {
         return retweets
     }
 
-    //获取评论的用户信息
-    fun getCommentsUserList(tweetId: String, bearerToken: String): List<String> {
+    //获取评论的top用户信息
+    fun getCommentsUserList(
+        tweetId: String,
+        bearerToken: String,
+        fragmentsNum: Int,
+        topN: Int
+    ): Map<String, TwitterUser> {
         val tweetId = "1600122565090889728" //
         val bearerToken =
             "AAAAAAAAAAAAAAAAAAAAAF3%2BcAEAAAAAww5nRctaDnOpRT9iuP9sJIzNQ%2FM%3DlhJQwGNjxp3B6TUbiepZ0lZ6oEuxDUmEn2Yd5VpDNOd4LMHLn8" // 替换成你的 Bearer Token
@@ -83,20 +93,33 @@ class TwitterInfoService(private val restTemplate: RestTemplate) {
         connection.setRequestProperty("Authorization", "Bearer $bearerToken")
 
         val response = BufferedReader(InputStreamReader(connection.inputStream)).use {
-//
             it.readText()
         }
-        val json = JSONObject(response.toString())
+        val json = JSONObject(response)
 //        println(response.toString())
-        val includesInfo = json.getJSONObject("includes")
-        val userArray = includesInfo.getJSONArray("users")
-        val userIdList = mutableListOf<String>()
-        for (i in 0 until userArray.length()) {
-            val userId = userArray.getJSONObject(i).getString("id")
-            userIdList.add(userId)
+        val dataArray = json.getJSONArray("data")
+        val uidLikeCountMap = mutableMapOf<String, Int>()
+        for (i in 0 until dataArray.length()) {
+            val data = dataArray.getJSONObject(i)
+            val like_count = data.getJSONObject("public_metrics").getInt("impression_count")
+            val user_id = data.getString("author_id")
+            val create_date = data.getString("created_at")
+            val user_id_with_date = user_id + "_" + create_date
+            uidLikeCountMap.put(user_id_with_date, like_count)
         }
-        return userIdList
-
+        val sortedEntries = uidLikeCountMap.entries.sortedByDescending { it.value }.take(topN) //取前10
+        println(sortedEntries)
+        val top10Map = mutableMapOf<String, Int>()
+        sortedEntries.forEach { top10Map[it.key] = it.value }
+        val resultMap = mutableMapOf<String, TwitterUser>()
+        top10Map.forEach { map ->
+            resultMap.put(map.key.split("_")[0], getTwitterUserService(map.key.split("_")[0], bearerToken).also {
+                it.likeCount = map.value
+                it.commentDate = getDateTime(map.key.split("_")[1])
+                it.fragmentsShare = fragmentsNum / (if (top10Map.size > 0) top10Map.size else 1)
+            })
+        }
+        return resultMap
     }
 
     fun getLikeCnt(tweetIds: List<String>, bearerToken: String) {
@@ -152,6 +175,16 @@ class TwitterInfoService(private val restTemplate: RestTemplate) {
             "address"
         )
         return user
+    }
+
+    fun getDateTime(dateString: String): Date? {
+        val utcZone = ZoneId.of("UTC")
+        val chinaZone = ZoneId.of("Asia/Shanghai")
+        val utcDateTime = LocalDateTime.parse(dateString, DateTimeFormatter.ISO_DATE_TIME)
+        val utcInstant = utcDateTime.atZone(utcZone).toInstant()
+        val chinaDateTime = ZonedDateTime.ofInstant(utcInstant, chinaZone)
+        val date = Date.from(chinaDateTime.toInstant())
+        return date
     }
 
 }
