@@ -73,6 +73,7 @@ class TwitterInfoService() {
 
     //获取评论的top用户信息
     fun getCommentsUserList(
+        address: String,
         tweetId: String,
         bearerToken: String,
         fragmentsNum: Int,
@@ -110,11 +111,13 @@ class TwitterInfoService() {
         sortedEntries.forEach { top10Map[it.key] = it.value }
         val resultMap = mutableMapOf<String, TwitterUser>()
         top10Map.forEach { map ->
-            resultMap.put(map.key.split("_")[0], getTwitterUserService(map.key.split("_")[0], bearerToken).also {
-                it.likeCount = map.value
-                it.commentDate = getDateTime(map.key.split("_")[1])
-                it.fragmentsShare = fragmentsNum / (if (top10Map.size > 0) top10Map.size else 1)
-            })
+            resultMap.put(
+                map.key.split("_")[0],
+                getTwitterUserService(address, map.key.split("_")[0], bearerToken).also {
+                    it.likeCount = map.value
+                    it.commentDate = getDateTime(map.key.split("_")[1])
+                    it.fragmentsShare = fragmentsNum / (if (top10Map.size > 0) top10Map.size else 1)
+                })
         }
         return resultMap.values.toList()
     }
@@ -150,7 +153,7 @@ class TwitterInfoService() {
     }
 
     //根据userId 获取用户信息
-    fun getTwitterUserService(userId: String, bearerToken: String): TwitterUser {
+    fun getTwitterUserService(address: String, userId: String, bearerToken: String): TwitterUser {
         val url = URL("$BASE_URL/users/$userId?user.fields=profile_image_url")
         val connection = url.openConnection() as HttpURLConnection
 
@@ -169,7 +172,7 @@ class TwitterInfoService() {
             data.get("profile_image_url").toString(),
             //TODO：main wallet & wallet list
             "mainWallet",
-            "address"
+            address
         )
         return user
     }

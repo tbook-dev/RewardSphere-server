@@ -35,4 +35,11 @@ class NextIdService(private val restTemplate: RestTemplate) {
             it.proofs.filter { p -> p.platform.equals("twitter", true) }
         }.map { it.identity }
     }
+
+    fun getTwitterUserIdByAddr(addr: String): List<String> {
+        val response = restTemplate.getForEntity<ProofResponse>("${this.nextIdEndpointURL}/proof?platform=ethereum&identity=${addr}&exact=true")
+        return response.body!!.ids.flatMap {
+            it.proofs.filter { p -> p.platform.equals("twitter", true) }
+        }.map { it.altId }
+    }
 }

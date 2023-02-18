@@ -8,20 +8,23 @@ import org.springframework.web.bind.annotation.RequestParam
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.data.redis.core.RedisTemplate
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.tbook.rewardsphere.service.NextIdService
 
 
 @RestController
 class UserProfileController(
     val twitterInfoService: TwitterInfoService,
-    private val redisTemplate: RedisTemplate<String, Any>
+    private val redisTemplate: RedisTemplate<String, Any>,
+    val nextIdService: NextIdService
 ) {
 
     val bearerToken =
         "AAAAAAAAAAAAAAAAAAAAAF3%2BcAEAAAAAww5nRctaDnOpRT9iuP9sJIzNQ%2FM%3DlhJQwGNjxp3B6TUbiepZ0lZ6oEuxDUmEn2Yd5VpDNOd4LMHLn8"
 
     @GetMapping("/userInfo")
-    fun getUserInfo(@RequestParam("userId") userId: String): TwitterUser {
-        return twitterInfoService.getTwitterUserService(userId, bearerToken)
+    fun getUserInfo(@RequestParam("address") address: String): TwitterUser {
+        val twitterUserId = nextIdService.getTwitterUserIdByAddr(address)[0]
+        return twitterInfoService.getTwitterUserService(address, twitterUserId, bearerToken)
     }
 
 
