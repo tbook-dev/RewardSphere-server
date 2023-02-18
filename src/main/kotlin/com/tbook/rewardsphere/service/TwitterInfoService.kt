@@ -78,9 +78,9 @@ class TwitterInfoService() {
         fragmentsNum: Int,
         topN: Int
     ): Map<String, TwitterUser> {
-        val tweetId = "1600122565090889728" //
-        val bearerToken =
-            "AAAAAAAAAAAAAAAAAAAAAF3%2BcAEAAAAAww5nRctaDnOpRT9iuP9sJIzNQ%2FM%3DlhJQwGNjxp3B6TUbiepZ0lZ6oEuxDUmEn2Yd5VpDNOd4LMHLn8" // 替换成你的 Bearer Token
+//        val tweetId = "1600122565090889728" //
+//        val bearerToken =
+//            "AAAAAAAAAAAAAAAAAAAAAF3%2BcAEAAAAAww5nRctaDnOpRT9iuP9sJIzNQ%2FM%3DlhJQwGNjxp3B6TUbiepZ0lZ6oEuxDUmEn2Yd5VpDNOd4LMHLn8" // 替换成你的 Bearer Token
 //        val url =
 //            URL("$BASE_URL/tweets/$tweetId?expansions=referenced_tweets.id.author_id&tweet.fields=conversation_id,created_at,in_reply_to_user_id,referenced_tweets,text,public_metrics")
 //    val url = URL("https://api.twitter.com/2/tweets/search/recent?query=${tweetId}&tweet.fields=public_metrics")
