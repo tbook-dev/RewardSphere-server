@@ -99,7 +99,7 @@ class TwitterInfoService() {
         val uidLikeCountMap = mutableMapOf<String, Int>()
         for (i in 0 until dataArray.length()) {
             val data = dataArray.getJSONObject(i)
-            val like_count = data.getJSONObject("public_metrics").getInt("impression_count")
+            val like_count = data.getJSONObject("public_metrics").getInt("like_count")
             val user_id = data.getString("author_id")
             val create_date = data.getString("created_at")
             val user_id_with_date = user_id + "_" + create_date
