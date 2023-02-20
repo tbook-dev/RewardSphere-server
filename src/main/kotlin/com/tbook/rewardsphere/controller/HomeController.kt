@@ -51,7 +51,7 @@ class HomeController(
     @PostMapping("/addMapping")
     fun deployContract(@RequestParam("twitId") twitId: String,
                        @RequestParam("address", required = false, defaultValue = "") address: String,
-                       principal: Principal): Any {
+                       principal: Principal?): Any {
         try {
             val pic = "https://ik.imagekit.io/tweetpik/356884789962211917/${twitId}.png"
             //val content = twitterService.getTweet(twitId, twitterToken)
