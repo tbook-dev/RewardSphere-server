@@ -1,6 +1,7 @@
 package com.tbook.rewardsphere.service
 
 import com.fasterxml.jackson.databind.JsonNode
+import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
@@ -20,6 +21,7 @@ class ContractService(
         @Value("\${contract_caller_secret}") private val callerSecret: String
 ) {
     val ethUrl = "http://localhost:8545"
+    private val logger = KotlinLogging.logger{}
 
     fun addMapping(twitId: String): Long {
         println("caller url: $callerUrl")
@@ -31,7 +33,8 @@ class ContractService(
         return result["nextId"].asLong()
     }
 
-    fun airDropTo(address: String, nftId: Int, count: Int) {
+    fun airDropTo(address: String, nftId: Long, count: Int) {
+        logger.info { "airDropTo: $address, $nftId, $count" }
         val request = RequestEntity.post(URI.create("${callerUrl}/airDrop"))
                 .contentType(MediaType.APPLICATION_JSON)
                 .header(HttpHeaders.AUTHORIZATION, callerSecret)
@@ -41,7 +44,7 @@ class ContractService(
                         "nftId" to nftId
                 ))
         val result = restTemplate.exchange<JsonNode>(request).body!!
-        println(result)
+        logger.info("airdrop result {}", result)
     }
 
     fun getContractBlockNumber(ethUrl: String, transactionHash: String): String {
