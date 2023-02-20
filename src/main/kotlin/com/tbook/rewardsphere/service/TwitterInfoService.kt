@@ -84,7 +84,7 @@ class TwitterInfoService() {
 //    val url = URL("https://api.twitter.com/2/tweets/search/recent?query=${tweetId}&tweet.fields=public_metrics")
 //    val url = URL("https://api.twitter.com/2/tweets/$tweetId")
         val url =
-            URL("https://api.twitter.com/2/tweets/search/recent?query=conversation_id:$tweetId&tweet.fields=public_metrics,created_at&expansions=author_id")
+            URL("https://api.twitter.com/2/tweets/search/recent?query=conversation_id:$tweetId&tweet.fields=public_metrics,created_at&expansions=author_id&max_results=100")
         val connection = url.openConnection() as HttpURLConnection
 
         connection.requestMethod = "GET"
